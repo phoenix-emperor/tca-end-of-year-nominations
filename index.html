@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>2025 Staff Awards - Vote Now</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+</head>
+<body>
+  <header>
+    <h1>2025 Staff Recognition Awards</h1>
+    <p>Tap a category • Vote for one colleague • See live results 🔥</p>
+  </header>
+
+  <main class="categories">
+    <div class="category-card" data-category="Most Punctual Staff">
+      <h2>Most Punctual Staff</h2>
+      <p>Always early, never late ⏰</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Team Player of the Year">
+      <h2>Team Player of the Year</h2>
+      <p>Goes above and beyond 🤝</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Office Comedian Award">
+      <h2>Office Comedian Award</h2>
+      <p>Keeps the office laughing 😂</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Rising Star Award (New Staff Showing Rapid Growth)">
+      <h2>Rising Star Award</h2>
+      <p>New but already shining ⭐</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Best Dressed Employee">
+      <h2>Best Dressed Employee</h2>
+      <p>Always slaying the fit 👔👗</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Top Facilitator">
+      <h2>Top Facilitator</h2>
+      <p>Makes meetings smooth 🎯</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Employee of the Year">
+      <h2>Employee of the Year</h2>
+      <p>Overall legend 🌟</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+    <div class="category-card" data-category="Mr/Ms Dependable">
+      <h2>Mr/Ms Dependable</h2>
+      <p>You can always count on them 🪨</p>
+      <div class="vote-count">0 votes</div>
+    </div>
+  </main>
+
+  <!-- Vote Modal -->
+  <div id="voteModal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <h2>Vote for <span id="categoryTitle"></span></h2>
+      <p><strong>You have not voted in this category yet.</strong></p>
+
+      <form id="voteForm">
+        <input type="hidden" id="selectedCategory">
+        <label>Who gets your vote? <span class="req">*</span></label>
+        <select id="nomineeName" required></select>
+
+        <button type="submit" id="submitVote">Cast Vote</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 • One vote per category • Results update live • Anonymous</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
