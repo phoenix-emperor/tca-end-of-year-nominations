@@ -1,89 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>2025 Staff Awards - Vote Now</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Nominations 2025</title>
+  <style>
+    body {
+      font-Family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f8ff;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    .category-btn {
+      display: block;
+      width: 90%;
+      margin: 12px auto;
+      padding: 18px;
+      font-size: 18px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .category-btn:hover {
+      background: #2980b9;
+    }
+
+    #nomination-form {
+      display: none;
+      margin: 30px auto;
+      padding: 25px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    #submit-btn {
+      padding: 12px 30px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
 </head>
+
 <body>
-  <header>
-    <h1>2025 Staff Recognition Awards</h1>
-    <p>Tap a category • Vote for one colleague • Live results (per device) + Export for sharing 🔥</p>
-  </header>
+  <div class="container">
+    <h1>Employee Awards 2025</h1>
+    <p>Click a category to nominate someone</p>
 
-  <main class="categories">
-    <div class="category-card" data-category="Most Punctual Staff">
-      <h2>Most Punctual Staff</h2>
-      <p>Always early, never late ⏰</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Team Player of the Year">
-      <h2>Team Player of the Year</h2>
-      <p>Goes above and beyond 🤝</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Office Comedian Award">
-      <h2>Office Comedian Award</h2>
-      <p>Keeps the office laughing 😂</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Rising Star Award (New Staff Showing Rapid Growth)">
-      <h2>Rising Star Award</h2>
-      <p>New but already shining ⭐</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Best Dressed Employee">
-      <h2>Best Dressed Employee</h2>
-      <p>Always slaying the fit 👔👗</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Top Facilitator">
-      <h2>Top Facilitator</h2>
-      <p>Makes meetings smooth 🎯</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Employee of the Year">
-      <h2>Employee of the Year</h2>
-      <p>Overall legend 🌟</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-    <div class="category-card" data-category="Mr/Ms Dependable">
-      <h2>Mr/Ms Dependable</h2>
-      <p>You can always count on them 🪨</p>
-      <div class="vote-count">0 votes</div>
-    </div>
-  </main>
+    <button class="category-btn" data-category="Most Punctual Staff">Most Punctual Staff</button>
+    <button class="category-btn" data-category="Team Player of the Year">Team Player of the Year</button>
+    <button class="category-btn" data-category="Office Comedian Award">Office Comedian Award</button>
+    <button class="category-btn" data-category="Rising Star Award">Rising Star Award</button>
+    <button class="category-btn" data-category="Best Dressed Employee">Best Dressed Employee</button>
+    <button class="category-btn" data-category="Top Facilitator">Top Facilitator</button>
+    <button class="category-btn" data-category="Employee of the Year">Employee of the Year</button>
+    <button class="category-btn" data-category="Mr/Ms Dependable">Mr/Ms Dependable</button>
 
-  <!-- Export Button -->
-  <div class="export-section">
-    <button id="exportVotes">📊 Export Results (CSV)</button>
-  </div>
-
-  <!-- Vote Modal -->
-  <div id="voteModal" class="modal">
-    <div class="modal-content">
-      <span class="close">×</span>
-      <h2>Vote for <span id="categoryTitle"></span></h2>
-      <div id="voteStatus"></div>
-
-      <form id="voteForm">
-        <input type="hidden" id="selectedCategory">
-        <label>Who gets your vote? <span class="req">*</span></label>
-        <select id="nomineeName" required></select>
-
-        <button type="submit" id="submitVote">Cast Vote</button>
-      </form>
+    <div id="nomination-form">
+      <h2 id="category-title"></h2>
+      <label>Type or select employee name:</label>
+      <input list="employees" id="employee-name" placeholder="Start typing..." required>
+      <datalist id="employees"></datalist>
+      <br><br>
+      <button id="submit-btn">Submit Nomination</button>
     </div>
   </div>
 
-  <footer>
-    <p>© 2025 • One vote per category • Export for team sync • Anonymous</p>
-  </footer>
+  <!-- ALL JAVASCRIPT GOES HERE (no external script.js) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
-  <!-- TomSelect only for now - Firebase later -->
-  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-  <script src="script.js"></script>
+    // ←←← PASTE YOUR OWN CONFIG HERE ←←←
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnXrnjdNUKa3jil3H7I9XZSPsbvaXbCdM",
+      authDomain: "staff-awards-2025.firebaseapp.com",
+      projectId: "staff-awards-2025",
+      storageBucket: "staff-awards-2025.firebasestorage.app",
+      messagingSenderId: "364044970466",
+      appId: "1:364044970466:web:602f0f2247b52fd63ff1bb",
+      measurementId: "G-BV3LM3XKJY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let currentCategory = "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Sign in anonymously
+      onAuthStateChanged(auth, user => {
+        if (user) currentUser = user;
+        else signInAnonymously(auth);
+      });
+
+      // 2. Load employee names
+      fetch("employees.json")
+        .then(r => r.json())
+        .then(data => {
+          const names = Array.isArray(data) ? data : (data.employees || []);
+          const list = document.getElementById("employees");
+          names.forEach(n => {
+            const opt = document.createElement("option");
+            opt.value = n;
+            list.appendChild(opt);
+          });
+        });
+
+      // 3. Button clicks
+      document.querySelectorAll(".category-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          // Wait briefly if auth still loading
+          if (!currentUser) {
+            await new Promise(r => setTimeout(r, 800));
+            if (!currentUser) return alert("Still loading… try again in 2 seconds");
+          }
+
+          currentCategory = btn.dataset.category;
+          document.getElementById("category-title").textContent = `Nominate for: ${currentCategory}`;
+
+          // Check for duplicate vote
+          const q = query(
+            collection(db, "nominations"),
+            where("userId", "==", currentUser.uid),
+            where("category", "==", currentCategory)
+          );
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            alert("You have already voted in this category!");
+            return;
+          }
+
+          document.getElementById("nomination-form").style.display = "block";
+          document.getElementById("employee-name").focus();
+        });
+      });
+
+      // 4. Submit vote
+      document.getElementById("submit-btn").addEventListener("click", async () => {
+        const name = document.getElementById("employee-name").value.trim();
+        if (!name) return alert("Please select a name");
+
+        try {
+          await addDoc(collection(db, "nominations"), {
+            category: currentCategory,
+            employeeName: name,
+            userId: currentUser.uid,
+            timestamp: serverTimestamp()
+          });
+          alert("Thank you! Your vote was recorded.");
+          document.getElementById("nomination-form").style.display = "none";
+          document.getElementById("employee-name").value = "";
+        } catch (e) {
+          alert("Error submitting vote. Try again.");
+        }
+      });
+    });
+  </script>
 </body>
+
 </html>

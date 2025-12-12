@@ -1,134 +1,98 @@
-let ts;
-const votes = JSON.parse(localStorage.getItem('staffVotes2025') || '{}');
+// Firebase config - paste your actual config here
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDnXrnjdNUKa3jil3H7I9XZSPsbvaXbCdM",
+  authDomain: "staff-awards-2025.firebaseapp.com",
+  projectId: "staff-awards-2025",
+  storageBucket: "staff-awards-2025.firebasestorage.app",
+  messagingSenderId: "364044970466",
+  appId: "1:364044970466:web:602f0f2247b52fd63ff1bb",
+  measurementId: "G-BV3LM3XKJY"
+};
 
-// INLINE EMPLOYEES - No fetch fails! Edit here for your 30+ names
-const employees = [
-  {"name": "Adebayo Tunde"},
-  {"name": "Chioma Okeke"},
-  {"name": "Fatima Yusuf"},
-  {"name": "Ibrahim Musa"},
-  {"name": "Ngozi Eze"},
-  {"name": "Oluwaseun Adebayo"},
-  {"name": "Tunde Balogun"},
-  {"name": "Zainab Abdullahi"},
-  {"name": "Emeka Chukwu"},
-  {"name": "Funmi Oladele"},
-  // Add ALL your real names here - comma separated, up to 200 no problem
-  {"name": "Aisha Bello"},
-  {"name": "Chukwudi Okeke"},
-  {"name": "Jennifer Osagie"},
-  {"name": "Kemi Adeyemi"},
-  {"name": "Michael Balogun"},
-  {"name": "Precious Nwachukwu"},
-  {"name": "Rita Eke"},
-  {"name": "Sola Akinwumi"},
-  {"name": "Umar Danjuma"},
-  {"name": "Victoria Agbo"},
-  {"name": "Wale Shittu"},
-  {"name": "Yemi Ojo"},
-  {"name": "Zara Ibrahim"},
-  {"name": "David Okonkwo"},
-  {"name": "Grace Adekunle"},
-  {"name": "Hassan Bello"},
-  {"name": "Ify Nwosu"},
-  {"name": "Jide Ogunleye"},
-  {"name": "Kehinde Taiwo"},
-  {"name": "Lara Adewale"},
-  {"name": "Mohammed Sani"},
-  {"name": "Nkechi Obi"},
-  {"name": "Ola Fajobi"},
-  {"name": "Patience Udo"},
-  {"name": "Quadri Ahmed"},
-  {"name": "Titi Bello"}
-  // Keep adding - this loads instantly
-];
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 
-function updateVoteCounts() {
-  document.querySelectorAll('.vote-count').forEach(el => {
-    const cat = el.parentElement.dataset.category;
-    const count = Object.keys(votes[cat] || {}).length;
-    el.textContent = count + (count === 1 ? ' vote' : ' votes');
-  });
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-// Init TomSelect IMMEDIATELY - no fetch
-ts = new TomSelect('#nomineeName', {
-  valueField: 'name',
-  labelField: 'name',
-  searchField: 'name',
-  options: employees,
-  create: false,
-  placeholder: 'Start typing a name... (e.g., Adebayo)',
-  maxOptions: 150,
-  render: {
-    no_results: () => '<div>No matching name—check spelling?</div>'
-  }
-});
-console.log('TomSelect loaded with', employees.length, 'names'); // Debug in console
+let currentUser = null;
 
-// Modal handling
-const modal = document.getElementById('voteModal');
-const closeBtn = document.querySelector('.close');
-const voteStatus = document.getElementById('voteStatus');
-const voteForm = document.getElementById('voteForm');
-
-document.querySelectorAll('.category-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const category = card.dataset.category;
-    document.getElementById('selectedCategory').value = category;
-    document.getElementById('categoryTitle').textContent = category;
-
-    if (votes[category]) {
-      voteStatus.innerHTML = `<p><strong>You already voted for:</strong><br><big>${Object.keys(votes[category])[0]}</big></p>`;
-      voteForm.style.display = 'none';
+document.addEventListener('DOMContentLoaded', () => {
+  // Auth: Sign in anonymously on load
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      console.log('User signed in:', user.uid);
     } else {
-      voteStatus.innerHTML = '<p><strong>Who deserves your vote?</strong></p>';
-      voteForm.style.display = 'block';
-      ts.clear();
+      signInAnonymously(auth).catch(console.error);
     }
-    modal.style.display = 'block';
   });
-});
 
-closeBtn.onclick = () => modal.style.display = 'none';
-window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+  // Load employee names (same as before)
+  fetch('employees.json')
+    .then(response => response.json())
+    .then(data => {
+      let names = Array.isArray(data) ? data : (data.employees || data.data || []);
+      const datalist = document.getElementById('employees');
+      datalist.innerHTML = '';
+      names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
+      });
+    })
+    .catch(error => console.error('Error loading employees:', error));
 
-// Submit vote
-voteForm.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const category = document.getElementById('selectedCategory').value;
-  const nominee = ts.getValue();
+  // Category button clicks (same)
+  const buttons = document.querySelectorAll('.category-btn');
+  const form = document.getElementById('nomination-form');
+  const title = document.getElementById('category-title');
+  const input = document.getElementById('employee-name');
+  const submitBtn = document.getElementById('submit-btn');
+  let currentCategory = '';
 
-  if (!nominee) return alert('Please select a name from the list!');
+  buttons.forEach(button => {
+    button.addEventListener('click', async () => {
+      currentCategory = button.dataset.category;
+      title.textContent = `Nominate for: ${currentCategory}`;
 
-  // Save vote with nominee tracking
-  if (!votes[category]) votes[category] = {};
-  votes[category][nominee] = true;
-  localStorage.setItem('staffVotes2025', JSON.stringify(votes));
+      // Check if user already voted for this category
+      if (currentUser) {
+        const q = query(collection(db, 'nominations'), where('userId', '==', currentUser.uid), where('category', '==', currentCategory));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          alert('You already nominated for this category!');
+          return;
+        }
+      }
 
-  updateVoteCounts();
-  alert(`✅ Vote for ${nominee} recorded! Refresh others to see.`);
-  modal.style.display = 'none';
-  this.reset();
-  ts.clear();
-});
-
-// Export to CSV - Central sync hack!
-document.getElementById('exportVotes').addEventListener('click', () => {
-  let csv = 'Category,Nominee,Votes\n';
-  Object.entries(votes).forEach(([cat, noms]) => {
-    Object.keys(noms).forEach(nom => {
-      csv += `${cat},"${nom}",1\n`;
+      form.style.display = 'block';
+      input.value = '';
     });
   });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'staff-votes-2025.csv';
-  a.click();
-  alert('📥 CSV downloaded—open in Google Sheets & share!');
-});
 
-// Load counts
-updateVoteCounts();
+  // Submit nomination
+  submitBtn.addEventListener('click', async () => {
+    if (!input.value || !currentUser) {
+      alert('Please select an employee and ensure you\'re signed in.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'nominations'), {
+        category: currentCategory,
+        employeeName: input.value,
+        userId: currentUser.uid,
+        timestamp: serverTimestamp()
+      });
+      alert('Nomination submitted!');
+      form.style.display = 'none';
+    } catch (e) {
+      console.error('Error submitting:', e);
+      alert('Submission failed. Try again.');
+    }
+  });
+});
