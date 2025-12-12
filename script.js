@@ -1,50 +1,70 @@
 let ts;
-let unsubscribe; // For real-time listener
+const votes = JSON.parse(localStorage.getItem('staffVotes2025') || '{}');
 
-const categories = [
-  'Most Punctual Staff', 'Team Player of the Year', 'Office Comedian Award',
-  'Rising Star Award (New Staff Showing Rapid Growth)', 'Best Dressed Employee',
-  'Top Facilitator', 'Employee of the Year', 'Mr/Ms Dependable'
+// INLINE EMPLOYEES - No fetch fails! Edit here for your 30+ names
+const employees = [
+  {"name": "Adebayo Tunde"},
+  {"name": "Chioma Okeke"},
+  {"name": "Fatima Yusuf"},
+  {"name": "Ibrahim Musa"},
+  {"name": "Ngozi Eze"},
+  {"name": "Oluwaseun Adebayo"},
+  {"name": "Tunde Balogun"},
+  {"name": "Zainab Abdullahi"},
+  {"name": "Emeka Chukwu"},
+  {"name": "Funmi Oladele"},
+  // Add ALL your real names here - comma separated, up to 200 no problem
+  {"name": "Aisha Bello"},
+  {"name": "Chukwudi Okeke"},
+  {"name": "Jennifer Osagie"},
+  {"name": "Kemi Adeyemi"},
+  {"name": "Michael Balogun"},
+  {"name": "Precious Nwachukwu"},
+  {"name": "Rita Eke"},
+  {"name": "Sola Akinwumi"},
+  {"name": "Umar Danjuma"},
+  {"name": "Victoria Agbo"},
+  {"name": "Wale Shittu"},
+  {"name": "Yemi Ojo"},
+  {"name": "Zara Ibrahim"},
+  {"name": "David Okonkwo"},
+  {"name": "Grace Adekunle"},
+  {"name": "Hassan Bello"},
+  {"name": "Ify Nwosu"},
+  {"name": "Jide Ogunleye"},
+  {"name": "Kehinde Taiwo"},
+  {"name": "Lara Adewale"},
+  {"name": "Mohammed Sani"},
+  {"name": "Nkechi Obi"},
+  {"name": "Ola Fajobi"},
+  {"name": "Patience Udo"},
+  {"name": "Quadri Ahmed"},
+  {"name": "Titi Bello"}
+  // Keep adding - this loads instantly
 ];
 
-// Real-time listener: Syncs counts across all devices
-function startRealTimeUpdates() {
-  const votesRef = window.collection(window.db, 'votes');
-  unsubscribe = window.onSnapshot(votesRef, (snapshot) => {
-    const totalVotes = {};
-    snapshot.docs.forEach(doc => {
-      const data = doc.data();
-      categories.forEach(cat => {
-        if (data[cat]) totalVotes[cat] = (totalVotes[cat] || 0) + 1;
-      });
-    });
-    updateVoteCounts(totalVotes);
-  }, (error) => console.error('Sync error:', error));
-}
-
-// Update display with live data
-function updateVoteCounts(voteData = {}) {
+function updateVoteCounts() {
   document.querySelectorAll('.vote-count').forEach(el => {
-    const cat = el.closest('.category-card').dataset.category;
-    const count = voteData[cat] || 0;
+    const cat = el.parentElement.dataset.category;
+    const count = Object.keys(votes[cat] || {}).length;
     el.textContent = count + (count === 1 ? ' vote' : ' votes');
   });
 }
 
-// Load employees and init TomSelect
-fetch('employees.json')
-  .then(r => r.json())
-  .then(employees => {
-    ts = new TomSelect('#nomineeName', {
-      valueField: 'name',
-      labelField: 'name',
-      searchField: 'name',
-      options: employees,
-      create: false,
-      placeholder: 'Type name...',
-      maxOptions: 150
-    });
-  });
+// Init TomSelect IMMEDIATELY - no fetch
+ts = new TomSelect('#nomineeName', {
+  valueField: 'name',
+  labelField: 'name',
+  searchField: 'name',
+  options: employees,
+  create: false,
+  placeholder: 'Start typing a name... (e.g., Adebayo)',
+  maxOptions: 150,
+  render: {
+    no_results: () => '<div>No matching name—check spelling?</div>'
+  }
+});
+console.log('TomSelect loaded with', employees.length, 'names'); // Debug in console
 
 // Modal handling
 const modal = document.getElementById('voteModal');
@@ -53,23 +73,18 @@ const voteStatus = document.getElementById('voteStatus');
 const voteForm = document.getElementById('voteForm');
 
 document.querySelectorAll('.category-card').forEach(card => {
-  card.addEventListener('click', async () => {
+  card.addEventListener('click', () => {
     const category = card.dataset.category;
     document.getElementById('selectedCategory').value = category;
     document.getElementById('categoryTitle').textContent = category;
 
-    // Check if user voted (local check for speed, cloud for truth)
-    const userVotesRef = window.doc(window.db, 'userVotes', 'anonymousUser'); // Simple anon tracking—upgrade to UUID later
-    const userDoc = await window.getDoc(userVotesRef);
-    const userVoted = userDoc.exists() ? userDoc.data()[category] : null;
-
-    if (userVoted) {
-      voteStatus.innerHTML = `<p><strong>You already voted for:</strong><br><big>${userVoted}</big></p>`;
+    if (votes[category]) {
+      voteStatus.innerHTML = `<p><strong>You already voted for:</strong><br><big>${Object.keys(votes[category])[0]}</big></p>`;
       voteForm.style.display = 'none';
     } else {
       voteStatus.innerHTML = '<p><strong>Who deserves your vote?</strong></p>';
       voteForm.style.display = 'block';
-      ts && ts.clear();
+      ts.clear();
     }
     modal.style.display = 'block';
   });
@@ -78,38 +93,42 @@ document.querySelectorAll('.category-card').forEach(card => {
 closeBtn.onclick = () => modal.style.display = 'none';
 window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
-// Submit vote to cloud
-voteForm.addEventListener('submit', async (e) => {
+// Submit vote
+voteForm.addEventListener('submit', function(e) {
   e.preventDefault();
   const category = document.getElementById('selectedCategory').value;
   const nominee = ts.getValue();
 
-  if (!nominee) return alert('Please select a name');
+  if (!nominee) return alert('Please select a name from the list!');
 
-  try {
-    // Save vote to central votes doc (increments count)
-    const votesRef = window.doc(window.db, 'votes', category);
-    await window.setDoc(votesRef, { [nominee]: true }, { merge: true });
+  // Save vote with nominee tracking
+  if (!votes[category]) votes[category] = {};
+  votes[category][nominee] = true;
+  localStorage.setItem('staffVotes2025', JSON.stringify(votes));
 
-    // Save user's vote (prevents duplicates)
-    const userVotesRef = window.doc(window.db, 'userVotes', 'anonymousUser');
-    const userData = (await window.getDoc(userVotesRef)).data() || {};
-    userData[category] = nominee;
-    await window.setDoc(userVotesRef, userData, { merge: true });
-
-    alert(`✅ Your vote for ${nominee} in "${category}" is live!`);
-    modal.style.display = 'none';
-    voteForm.reset();
-    ts.clear();
-  } catch (error) {
-    alert('Vote failed—check console and try again.');
-    console.error(error);
-  }
+  updateVoteCounts();
+  alert(`✅ Vote for ${nominee} recorded! Refresh others to see.`);
+  modal.style.display = 'none';
+  this.reset();
+  ts.clear();
 });
 
-// Cleanup listener on unload
-window.addEventListener('beforeunload', () => unsubscribe && unsubscribe());
+// Export to CSV - Central sync hack!
+document.getElementById('exportVotes').addEventListener('click', () => {
+  let csv = 'Category,Nominee,Votes\n';
+  Object.entries(votes).forEach(([cat, noms]) => {
+    Object.keys(noms).forEach(nom => {
+      csv += `${cat},"${nom}",1\n`;
+    });
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'staff-votes-2025.csv';
+  a.click();
+  alert('📥 CSV downloaded—open in Google Sheets & share!');
+});
 
-// Start real-time sync on load
-startRealTimeUpdates();
-updateVoteCounts(); // Initial load
+// Load counts
+updateVoteCounts();

@@ -17,7 +17,7 @@ header p { opacity: 0.9; font-size: 1.1rem; }
 .categories {
   display: grid;
   gap: 18px;
-  padding: 10px 20px 40px;
+  padding: 10px 20px 20px;
   grid-template-columns: 1fr;
 }
 @media (min-width: 640px) {
@@ -42,6 +42,21 @@ header p { opacity: 0.9; font-size: 1.1rem; }
   font-size: 1.5rem;
   color: #5a67d8;
 }
+
+.export-section {
+  text-align: center;
+  padding: 0 20px 20px;
+}
+#exportVotes {
+  padding: 12px 24px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+#exportVotes:hover { background: #218838; }
 
 .modal {
   display: none;
@@ -80,7 +95,8 @@ button#submitVote {
 }
 button#submitVote:hover { background: #434190; }
 
-/* Clean white dropdown */
+/* Clean white dropdown - force load state gone */
+#nomineeName { min-height: 50px; } /* Visual cue if empty */
 .ts-control, .ts-dropdown {
   background: white !important;
   border-radius: 12px !important;
